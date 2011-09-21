@@ -11,30 +11,31 @@
 **/
 
 (function($) {
-    var opts = new Array;
-    var level = new Array;
-    var img = new Array;
-    var links = new Array;
-    var titles = new Array;
-    var order = new Array;
-    var imgInc = new Array;
-    var inc = new Array;
-    var stripInt = new Array;
-    var imgInt = new Array;	
+    var opts = {};
+    var level = [];
+    var img = [];
+    var links = [];
+    var titles = [];
+    var order = [];
+    var imgInc = [];
+    var inc = [];
+    var stripInt = [];
+    var imgInt = [];	
 	
     $.fn.jqFancyTransitions = $.fn.jqfancytransitions = function(options){
 	
-        init = function(el){
-
+        var init = function(el){
+            var stripWidth, gap, stripLeft, tstripWidth;
+            
             opts[el.id] = $.extend({}, $.fn.jqFancyTransitions.defaults, options);
-            img[el.id] = new Array(); // images array
-            links[el.id] = new Array(); // links array
-            titles[el.id] = new Array(); // titles array
-            order[el.id] = new Array(); // strips order array
+            img[el.id] = []; // images array
+            links[el.id] = []; // links array
+            titles[el.id] = []; // titles array
+            order[el.id] = []; // strips order array
             imgInc[el.id] = 0;
             inc[el.id] = 0;
 
-            params = opts[el.id];
+            var params = opts[el.id];
 
             if(params.effect == 'zipper'){
                 params.direction = 'alternate';
@@ -55,7 +56,7 @@
             stripLeft = 0;
 
             // create images and titles arrays
-            $.each($('#'+el.id+' img'), function(i,item){
+            $.each($('#' + el.id + ' img'), function(i, item){
                 img[el.id][i] = $(item).attr('src');
                 links[el.id][i] = $(item).next().attr('href');
                 titles[el.id][i] = $(item).attr('alt') ? $(item).attr('alt') : '';
@@ -64,7 +65,7 @@
 
             // set panel
             $('#'+el.id).css({
-                'background-image':'url('+img[el.id][0]+')',
+                'background-image':'url(' + img[el.id][0] + ')',
                 'width': params.width,
                 'height': params.height,
                 'position': 'relative',
@@ -72,33 +73,35 @@
             });
 
             // create title bar
-            $('#'+el.id).append("<div class='ft-title' id='ft-title-"+el.id+"' style='position: absolute; bottom:0; left: 0; z-index: 1000; color: #fff; background-color: #000; '>"+titles[el.id][0]+"</div>");
-            if(titles[el.id][imgInc[el.id]])
-                $('#ft-title-'+el.id).css('opacity',opts[el.id].titleOpacity);
-            else
-                $('#ft-title-'+el.id).css('opacity',0);
+            $('#' + el.id).append("<div class='ft-title' id='ft-title-" + el.id + "' style='position: absolute; bottom:0; left: 0; z-index: 1000; color: #fff; background-color: #000; '>"+titles[el.id][0]+"</div>");
+            if(titles[el.id][imgInc[el.id]]){
+                $('#ft-title-' + el.id).css('opacity', opts[el.id].titleOpacity);
+            } else {
+                $('#ft-title-' + el.id).css('opacity', 0);
+            }                
 
             if(params.navigation){
                 $.navigation(el);
                 $('#ft-buttons-'+el.id).children().first().addClass('ft-button-'+el.id+'-active');			
             }
 
-            odd = 1;
+            var odd = 1;
             // creating bars
             // and set their position
-            for(j=1; j < params.strips+1; j++){
+            for(var j = 1; j < params.strips + 1; j++){
 			
-                if( gap > 0){
+                if(gap > 0){
                     tstripWidth = stripWidth + 1;
                     gap--;
                 } else {
                     tstripWidth = stripWidth;
                 }
 			
-                if(params.links)	
+                if(params.links){
                     $('#'+el.id).append("<a href='"+links[el.id][0]+"' class='ft-"+el.id+"' id='ft-"+el.id+j+"' style='width:"+tstripWidth+"px; height:"+params.height+"px; float: left; position: absolute;outline:none;'></a>");
-                else
+                } else {
                     $('#'+el.id).append("<div class='ft-"+el.id+"' id='ft-"+el.id+j+"' style='width:"+tstripWidth+"px; height:"+params.height+"px; float: left; position: absolute;'></div>");
+                }
 							
                 // positioning bars
                 $("#ft-"+el.id+j).css({ 
@@ -108,11 +111,13 @@
 			
                 stripLeft += tstripWidth;
 
-                if(params.position == 'bottom')
-                    $("#ft-"+el.id+j).css( 'bottom', 0 );
+                if(params.position == 'bottom'){
+                    $("#ft-" + el.id + j).css('bottom', 0);
+                }                    
 				
-                if (j%2 == 0 && params.position == 'alternate')
-                    $("#ft-"+el.id+j).css( 'bottom', 0 );
+                if (j % 2 == 0 && params.position == 'alternate'){
+                    $("#ft-" + el.id + j).css('bottom', 0);
+                }                    
 	
                 // bars order
                 // fountain
@@ -122,24 +127,24 @@
                     odd *= -1;
                 } else {
                     // linear
-                    order[el.id][j-1] = j;
+                    order[el.id][j - 1] = j;
                 }
 	
             }
 
-            $('.ft-'+el.id).mouseover(function(){
+            $('.ft-' + el.id).mouseover(function(){
                 opts[el.id].pause = true;
             });
 		
-            $('.ft-'+el.id).mouseout(function(){
+            $('.ft-' + el.id).mouseout(function(){
                 opts[el.id].pause = false;
             });	
 			
-            $('#ft-title-'+el.id).mouseover(function(){
+            $('#ft-title-' + el.id).mouseover(function(){
                 opts[el.id].pause = true;
             });
 		
-            $('#ft-title-'+el.id).mouseout(function(){
+            $('#ft-title-' + el.id).mouseout(function(){
                 opts[el.id].pause = false;
             });				
 		
@@ -153,23 +158,27 @@
         // transition
         $.transition = function(el,direction){
 
-            if(opts[el.id].pause == true) return;
+            if(opts[el.id].pause == true){
+                return;
+            } 
 
             stripInt[el.id] = setInterval(function() {
-                $.strips(order[el.id][inc[el.id]], el)
-            },opts[el.id].stripDelay);
+                $.strips(order[el.id][inc[el.id]], el);
+            }, opts[el.id].stripDelay);
 		
             $('#'+el.id).css({
                 'background-image': 'url('+img[el.id][imgInc[el.id]]+')'
             });
 		
-            if(typeof(direction) == "undefined")
+            if(typeof(direction) == "undefined"){
                 imgInc[el.id]++;
-            else
-            if(direction == 'prev')
-                imgInc[el.id]--;
-            else
-                imgInc[el.id] = direction;
+            }else {
+                if(direction == 'prev'){
+                    imgInc[el.id]--;
+                } else {
+                    imgInc[el.id] = direction;
+                }                
+            }            
 
             if  (imgInc[el.id] == img[el.id].length) {
                 imgInc[el.id] = 0;
@@ -195,7 +204,7 @@
 		
             inc[el.id] = 0;
 		
-            buttons = $('#ft-buttons-'+el.id).children();
+            var buttons = $('#ft-buttons-'+el.id).children();
 		
             buttons.each(function(index){
                 if(index == imgInc[el.id]){
@@ -205,20 +214,21 @@
                 }
             });		
 
-            if(opts[el.id].direction == 'random')
+            if(opts[el.id].direction == 'random'){
                 $.fisherYates (order[el.id]);
+            }                
 			
             if((opts[el.id].direction == 'right' && order[el.id][0] == 1) 
                 || opts[el.id].direction == 'alternate'
-                || opts[el.id].direction == 'fountainAlternate')			
-                order[el.id].reverse();		
+                || opts[el.id].direction == 'fountainAlternate'){
+                order[el.id].reverse();
+            }                
         };
-
 
         // strips animations
         $.strips = function(itemId, el){
-
-            temp = opts[el.id].strips;
+            var currWidth;
+            var temp = opts[el.id].strips;
             if (inc[el.id] == temp) {
                 clearInterval(stripInt[el.id]);
                 return;
@@ -276,7 +286,7 @@
                 'position' 	: 'absolute',
                 'top'		: params.height/2 - 15,
                 'right'		: 0,
-                'z-index' 	: 1001,
+                'z-index' 	: params.zIndex,
                 'line-height': '30px',
                 'opacity'	: 0.7
             }).click( function(e){
@@ -285,7 +295,7 @@
                 clearInterval(imgInt[el.id]);
                 imgInt[el.id] = setInterval(function() {
                     $.transition(el)
-                }, params.delay+params.stripDelay*params.strips);
+                }, params.delay + params.stripDelay * params.strips);
             });
 
             // image buttons
@@ -295,7 +305,7 @@
                 'padding-top'	: 5,
                 'width'			: opts[el.id].width
             });
-            for(k=1;k<img[el.id].length+1;k++){
+            for(var k = 1; k < img[el.id].length + 1; k++){
                 $('#ft-buttons-'+el.id).append("<a href='#' class='ft-button-"+el.id+"'>"+k+"</a>");
             }
             $('.ft-button-'+el.id).css({
@@ -309,7 +319,7 @@
                     clearInterval(imgInt[el.id]);
                     imgInt[el.id] = setInterval(function() {
                         $.transition(el)
-                    }, params.delay+params.stripDelay*params.strips);				
+                    }, params.delay + params.stripDelay * params.strips);				
                 })
             });		
         }
@@ -319,9 +329,12 @@
         // shuffle array function
         $.fisherYates = function(arr) {
             var i = arr.length;
-            if ( i == 0 ) return false;
-            while ( --i ) {
-                var j = Math.floor( Math.random() * ( i + 1 ) );
+            if (i == 0){
+                return false;
+            }
+            
+            while (--i) {
+                var j = Math.floor(Math.random() * (i + 1));
                 var tempi = arr[i];
                 var tempj = arr[j];
                 arr[i] = tempj;
@@ -329,12 +342,9 @@
             }
         }	
 		
-        this.each (
-            function(){
-                init(this);
-            }
-            );
-		
+        this.each (function(){
+            init(this);
+        });
     };
 
     // default values
@@ -350,7 +360,8 @@
         direction: 'fountainAlternate', // left, right, alternate, random, fountain, fountainAlternate
         effect: '', // curtain, zipper, wave
         navigation: false, // prev next and buttons
-        links : false // show images as links 		
+        links : false, // show images as links 		
+        zIndex: 1001
     };
 	
 })(jQuery);
