@@ -25,7 +25,7 @@
     $.fn.jqFancyTransitions = $.fn.jqfancytransitions = function(options){
 	
         var init = function(el){
-            var stripWidth, gap, stripLeft, tstripWidth;
+            var strip, gap, offset, tstrip;
             
             opts[el.id] = $.extend({}, $.fn.jqFancyTransitions.defaults, options);
             img[el.id] = []; // images array
@@ -43,17 +43,23 @@
             }
             if(params.effect == 'wave'){
                 params.direction = 'alternate';
-                params.position = 'top';
+                params.position = params.horizontal ? 'left' : 'top';
             }
             if(params.effect == 'curtain'){
                 params.direction = 'alternate';
                 params.position = 'curtain';
             }	
 
-            // width of strips
-            stripWidth = parseInt(params.width / params.strips); 
-            gap = params.width - stripWidth*params.strips; // number of pixels
-            stripLeft = 0;
+            if(params.horizontal){
+                strip = parseInt(params.height / params.strips);
+                gap = params.height - strip * params.strips; // number of pixels
+            }else {
+                // width of strips    
+                strip = parseInt(params.width / params.strips);
+                gap = params.width - strip * params.strips; // number of pixels
+            }
+
+            offset = 0;
 
             // create images and titles arrays
             $.each($('#' + el.id + ' img'), function(i, item){
@@ -91,29 +97,38 @@
             for(var j = 1; j < params.strips + 1; j++){
 			
                 if(gap > 0){
-                    tstripWidth = stripWidth + 1;
+                    tstrip = strip + 1;
                     gap--;
                 } else {
-                    tstripWidth = stripWidth;
+                    tstrip = strip;
                 }
 			
                 if(params.links){
-                    $('#'+el.id).append("<a href='"+links[el.id][0]+"' class='ft-"+el.id+"' id='ft-"+el.id+j+"' style='width:"+tstripWidth+"px; height:"+params.height+"px; float: left; position: absolute;outline:none;'></a>");
+                    $('#' + el.id).append("<a href='"+links[el.id][0]+"' class='ft-"+el.id+"' id='ft-"+el.id+j+"' style='width:"+tstrip+"px; height:"+params.height+"px; float: left; position: absolute;outline:none;'></a>");
                 } else {
-                    $('#'+el.id).append("<div class='ft-"+el.id+"' id='ft-"+el.id+j+"' style='width:"+tstripWidth+"px; height:"+params.height+"px; float: left; position: absolute;'></div>");
+                    if(params.horizontal){
+                        $('#' + el.id).append("<div class='ft-" + el.id + "' id='ft-" + el.id + j + "' style='width:" + params.width + "px; height:" + tstrip + "px; position: absolute;'></div>");   
+                    }else{
+                        $('#' + el.id).append("<div class='ft-" + el.id + "' id='ft-" + el.id + j + "' style='width:" + tstrip + "px; height:" + params.height + "px; float: left; position: absolute;'></div>");
+                    }
                 }
 							
                 // positioning bars
-                $("#ft-"+el.id+j).css({ 
-                    'background-position': -stripLeft +'px top',
-                    'left' : stripLeft 
+                $("#ft-" + el.id + j).css(params.horizontal ? {
+                    'background-position': '0 ' + -offset + 'px',
+                    'top' : offset 
+                } : {
+                    'background-position': -offset + 'px top',
+                    'left' : offset 
                 });
 			
-                stripLeft += tstripWidth;
+                offset += tstrip;
 
                 if(params.position == 'bottom'){
                     $("#ft-" + el.id + j).css('bottom', 0);
-                }                    
+                } else if(params.position == 'right'){
+                    $("#ft-" + el.id + j).css('right', 0);
+                }
 				
                 if (j % 2 == 0 && params.position == 'alternate'){
                     $("#ft-" + el.id + j).css('bottom', 0);
@@ -218,7 +233,8 @@
                 $.fisherYates (order[el.id]);
             }                
 			
-            if((opts[el.id].direction == 'right' && order[el.id][0] == 1) 
+            if((opts[el.id].direction == 'right' && order[el.id][0] == 1)
+                || (opts[el.id].direction == 'bottom' && order[el.id][0] == 1)
                 || opts[el.id].direction == 'alternate'
                 || opts[el.id].direction == 'fountainAlternate'){
                 order[el.id].reverse();
@@ -227,7 +243,7 @@
 
         // strips animations
         $.strips = function(itemId, el){
-            var currWidth;
+            var current;
             var temp = opts[el.id].strips;
             if (inc[el.id] == temp) {
                 clearInterval(stripInt[el.id]);
@@ -235,26 +251,51 @@
             }
             $('.ft-'+el.id).attr('href',links[el.id][imgInc[el.id]]);
             if(opts[el.id].position == 'curtain'){
-                currWidth = $('#ft-'+el.id+itemId).width();
-                $('#ft-'+el.id+itemId).css({
-                    width: 0, 
-                    opacity: 0, 
-                    'background-image': 'url('+img[el.id][imgInc[el.id]]+')'
-                });
-                $('#ft-'+el.id+itemId).animate({
-                    width: currWidth, 
-                    opacity: 1
-                }, 1000);
+                if(opts[el.id].horizontal){
+                    current = $('#ft-'+el.id+itemId).height();
+                    $('#ft-'+el.id+itemId).css({
+                        height: 0, 
+                        opacity: 0, 
+                        'background-image': 'url(' + img[el.id][imgInc[el.id]] + ')'
+                    });
+                    $('#ft-'+el.id+itemId).animate({
+                        height: current, 
+                        opacity: 1
+                    }, 1000);
+                }else {
+                    current = $('#ft-'+el.id+itemId).width();
+                    $('#ft-'+el.id+itemId).css({
+                        width: 0, 
+                        opacity: 0, 
+                        'background-image': 'url(' + img[el.id][imgInc[el.id]] + ')'
+                    });
+                    $('#ft-'+el.id+itemId).animate({
+                        width: current, 
+                        opacity: 1
+                    }, 1000);
+                }
             } else {
-                $('#ft-'+el.id+itemId).css({
-                    height: 0, 
-                    opacity: 0, 
-                    'background-image': 'url('+img[el.id][imgInc[el.id]]+')'
-                });
-                $('#ft-'+el.id+itemId).animate({
-                    height: opts[el.id].height, 
-                    opacity: 1
-                }, 1000);
+                if(opts[el.id].horizontal){
+                    $('#ft-'+el.id+itemId).css({
+                        width: 0, 
+                        opacity: 0, 
+                        'background-image': 'url('+img[el.id][imgInc[el.id]]+')'
+                    });
+                    $('#ft-'+el.id+itemId).animate({
+                        width: opts[el.id].width,
+                        opacity: 1
+                    }, 1000);
+                }else {
+                    $('#ft-'+el.id+itemId).css({
+                        height: 0, 
+                        opacity: 0, 
+                        'background-image': 'url('+img[el.id][imgInc[el.id]]+')'
+                    });
+                    $('#ft-'+el.id+itemId).animate({
+                        height: opts[el.id].height, 
+                        opacity: 1
+                    }, 1000);
+                }
             }
 		
             inc[el.id]++;
@@ -270,7 +311,7 @@
                 'position' 	: 'absolute',
                 'top'		: params.height/2 - 15,
                 'left'		: 0,
-                'z-index' 	: 1001,
+                'z-index' 	: params.zIndex,
                 'line-height': '30px',
                 'opacity'	: 0.7
             }).click( function(e){
@@ -356,12 +397,13 @@
         stripDelay: 50, // delay beetwen strips in ms
         titleOpacity: 0.7, // opacity of title
         titleSpeed: 1000, // speed of title appereance in ms
-        position: 'alternate', // top, bottom, alternate, curtain
-        direction: 'fountainAlternate', // left, right, alternate, random, fountain, fountainAlternate
+        position: 'alternate', // top, bottom, left, right, alternate, curtain
+        direction: 'fountainAlternate', // left, right, top, bottom, alternate, random, fountain, fountainAlternate
         effect: '', // curtain, zipper, wave
         navigation: false, // prev next and buttons
         links : false, // show images as links 		
-        zIndex: 1001
+        zIndex: 1001,
+        horizontal: false
     };
 	
 })(jQuery);
